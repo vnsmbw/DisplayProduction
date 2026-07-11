@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Screen Rotator</title>
+  <style>
+    :root{
+      --bg: #000;
+      --panel: rgba(10, 18, 30, 0.78);
+      --panel-border: rgba(255,255,255,0.12);
+      --panel-hover: rgba(255,255,255,0.18);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 12px 36px rgba(0,0,0,0.35);
+      --radius: 18px;
+      --nav-bottom: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body.tv-mode.hide-cursor,
+    body.tv-mode.hide-cursor * {
+      cursor: none !important;
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .viewer {
+      position: absolute;
+      inset: 0;
+      background: #000;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+
+    /* Floating navigation bottom-center */
+    .floating-nav {
+      position: absolute;
+      left: 50%;
+      bottom: var(--nav-bottom);
+      transform: translateX(-50%);
+      z-index: 50;
+      width: min(1320px, calc(100vw - 28px));
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 12px;
+      border-radius: var(--radius);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      user-select: none;
+    }
+
+    .floating-nav.hidden {
+      opacity: 0;
+      transform: translateX(-50%) translateY(28px);
+      pointer-events: none;
+    }
+
+    .nav-left, .nav-center, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .nav-center {
+      min-width: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .btn, .tab {
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover, .tab:hover {
+      transform: translateY(-1px);
+      border-color: var(--panel-hover);
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(34,197,94,0.18));
+      border-color: rgba(56,189,248,0.55);
+    }
+
+    .icon-btn {
+      min-width: 44px;
+      text-align: center;
+      padding-left: 11px;
+      padding-right: 11px;
+    }
+
+    .progress-wrap {
+      position: relative;
+      width: min(280px, 26vw);
+      min-width: 160px;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-left: 6px;
+      margin-right: 4px;
+      flex: 0 0 auto;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--warning), #fbbf24);
+      transition: width 0.12s linear, background 0.15s linear;
+    }
+
+    .progress-bar.rotate {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
+      flex: 0 0 auto;
+    }
+
+    .progress-dot.rotate {
+      background: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.16);
+    }
+
+    .progress-dot.pause {
+      background: var(--danger);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.16);
+    }
+
+    /* Slider duration */
+    .duration-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.04);
+      min-width: 210px;
+    }
+
+    .duration-label {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .duration-value {
+      min-width: 36px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .duration-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 140px;
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .duration-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+    }
+
+    .duration-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--accent);
+      margin-top: -5px;
+      box-shadow: -100vw 0 0 100vw rgba(56,189,248,0.28);
+    }
+
+    .duration-slider::-moz-range-track {
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+    }
+
+    .duration-slider::-moz-range-progress {
+      height: 6px;
+      background: rgba(56,189,248,0.6);
+      border-radius: 999px;
+    }
+
+    .duration-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    .manager {
+      position: absolute;
+      right: 12px;
+      bottom: 98px;
+      z-index: 60;
+      width: min(420px, calc(100vw - 24px));
+      max-height: min(70vh, 720px);
+      overflow: auto;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(10, 18, 30, 0.96);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    .manager.open {
+      display: block;
+    }
+
+    .manager-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .manager-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .manager-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .manager-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .manager-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .manager-item .name {
+      font-weight: 600;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .manager-item .url {
+      grid-column: 1 / -1;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.35;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 70;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(10,18,30,0.88);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reload-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 65;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(10,18,30,0.82);
+      border: 1px solid var(--panel-border);
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .reload-badge.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .loading-line {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      z-index: 64;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .loading-line.show {
+      opacity: 1;
+      animation: loadingSweep 1.2s linear infinite;
+    }
+
+    @keyframes loadingSweep {
+      0%   { width: 0%; left: 0; }
+      50%  { width: 45%; left: 25%; }
+      100% { width: 0%; left: 100%; }
+    }
+
+    @media (max-width: 1180px) {
+      .floating-nav {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        width: calc(100vw - 16px);
+      }
+
+      .nav-left, .nav-center, .nav-right {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .progress-wrap {
+        width: min(320px, 70vw);
+      }
+
+      .duration-control {
+        min-width: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="viewer">
+      <div class="loading-line" id="loadingLine"></div>
+      <div class="reload-badge" id="reloadBadge">Đang tải lại iframe...</div>
+      <iframe
+        id="frame"
+        title="Interactive dashboard rotator"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="fullscreen; clipboard-read; clipboard-write">
+      </iframe>
+    </div>
+
+    <!-- Bottom center floating navigation -->
+    <div class="floating-nav" id="nav">
+      <div class="nav-left">
+        <button class="btn icon-btn" id="prevBtn" title="Trang trước">◀</button>
+        <button class="btn icon-btn" id="nextBtn" title="Trang sau">▶</button>
+      </div>
+
+      <div class="nav-center">
+        <div class="tabs" id="tabs"></div>
+      </div>
+
+      <div class="nav-right">
+        <div class="progress-dot" id="progressDot" title="Trạng thái"></div>
+        <div class="progress-wrap" title="Tiến trình idle / rotate">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- NEW: Global duration slider -->
+        <div class="duration-control" title="Thời gian rotate áp dụng cho tất cả page">
+          <span class="duration-label">Duration</span>
+          <input
+            type="range"
+            min="5"
+            max="120"
+            step="1"
+            value="20"
+            class="duration-slider"
+            id="globalDurationSlider"
+          />
+          <span class="duration-value" id="globalDurationValue">20s</span>
+        </div>
+
+        <button class="btn icon-btn" id="pauseBtn" title="Tạm dừng / tiếp tục">⏸</button>
+        <button class="btn icon-btn" id="addBtn" title="Thêm page">＋</button>
+        <button class="btn icon-btn" id="manageBtn" title="Quản lý page">⚙</button>
+        <button class="btn icon-btn" id="tvBtn" title="TV mode">📺</button>
+        <button class="btn icon-btn" id="fsBtn" title="Fullscreen">⛶</button>
+      </div>
+    </div>
+
+    <!-- Manager panel -->
+    <div class="manager" id="managerPanel">
+      <div class="manager-head">
+        <div class="manager-title">Quản lý page</div>
+        <button class="mini-btn" id="closeManagerBtn">Đóng</button>
+      </div>
+      <div class="manager-sub">
+        Danh sách được lưu bằng localStorage trên chính trình duyệt / thiết bị này.
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+        <button class="mini-btn" id="managerAddBtn">+ Thêm page</button>
+        <button class="mini-btn" id="resetDefaultBtn">Reset mặc định</button>
+        <button class="mini-btn" id="reloadNowBtn">Reload iframe</button>
+      </div>
+      <div class="manager-list" id="managerList"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    /****************************************************************
+     * CONFIG
+     ****************************************************************/
+    const CONFIG = {
+      STORAGE_KEY: "interactive_rotator_pages_v6",
+      STORAGE_TV_MODE: "interactive_rotator_tv_mode_v6",
+      STORAGE_GLOBAL_DURATION: "interactive_rotator_global_duration_v6",
+      DEFAULT_ROTATE_SEC: 20,
+      MIN_ROTATE_SEC: 5,
+      MAX_ROTATE_SEC: 120,
+      IDLE_BEFORE_ROTATE_MS: 10000,   // user idle 10s thì mới vào auto mode
+      NAV_HIDE_MS: 2500,              // nav ẩn sau 2.5s không tương tác
+      CURSOR_HIDE_MS: 2200,           // TV mode: ẩn con trỏ sau 2.2s
+      LOAD_TIMEOUT_MS: 25000,         // nếu iframe không load xong trong 25s -> tự reload
+      AUTO_REFRESH_MS: 30 * 60 * 1000 // refresh định kỳ 30 phút để tránh treo lâu
+    };
+
+    /****************************************************************
+     * HELPERS
+     ****************************************************************/
+    function createId() {
+      return "id_" + Math.random().toString(36).slice(2, 10);
+    }
+
+    /****************************************************************
+     * DEFAULT PAGES
+     * Lưu ý: trong JavaScript string phải dùng '&' thật, KHÔNG dùng '&amp;'
+     ****************************************************************/
+    const defaultPages = [
+      {
+        id: createId(),
+        name: "Power BI",
+        url: "https://app.powerbi.com/view?r=eyJrIjoiZjBkNjg2ZGYtNWZjMy00MGQxLThkNjctNTYyNmZiMzg5NDYxIiwidCI6IjMzZjlmMTMyLTJkOWQtNDMzYS1hMTc5LTkyODQxZTRkOTEzMSIsImMiOjEwfQ%3D%3D&pageName=731dc0323d15854bae25"
+      },
+      {
+        id: createId(),
+        name: "Power Apps",
+        url: "https://apps.powerapps.com/play/e/default-2cc3f55e-e06e-44bb-b341-b718e012e48f/a/fba0c396-b7f1-490f-9532-2ab3dc6d05d3"
+      }
+    ];
+
+    /****************************************************************
+     * STATE
+     ****************************************************************/
+    let pages = loadPages();
+    let currentIndex = 0;
+
+    let manualPaused = false;
+    let tvMode = loadTvMode();
+
+    let globalRotateSec = loadGlobalDurationSec();
+
+    let lastActivityAt = Date.now();
+    let rotateCountdownStartAt = null;
+
+    let navHideTimer = null;
+    let cursorHideTimer = null;
+    let loadWatchTimer = null;
+    let periodicRefreshTimer = null;
+    let firstFullscreenAttempted = false;
+    let lastMouseMoveAt = 0;
+
+    /****************************************************************
+     * DOM
+     ****************************************************************/
+    const body = document.body;
+    const frame = document.getElementById("frame");
+
+    const nav = document.getElementById("nav");
+    const tabsEl = document.getElementById("tabs");
+
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const addBtn = document.getElementById("addBtn");
+    const manageBtn = document.getElementById("manageBtn");
+    const tvBtn = document.getElementById("tvBtn");
+    const fsBtn = document.getElementById("fsBtn");
+
+    const progressBar = document.getElementById("progressBar");
+    const progressDot = document.getElementById("progressDot");
+
+    const managerPanel = document.getElementById("managerPanel");
+    const managerList = document.getElementById("managerList");
+    const closeManagerBtn = document.getElementById("closeManagerBtn");
+    const managerAddBtn = document.getElementById("managerAddBtn");
+    const resetDefaultBtn = document.getElementById("resetDefaultBtn");
+    const reloadNowBtn = document.getElementById("reloadNowBtn");
+
+    const toast = document.getElementById("toast");
+    const reloadBadge = document.getElementById("reloadBadge");
+    const loadingLine = document.getElementById("loadingLine");
+
+    const globalDurationSlider = document.getElementById("globalDurationSlider");
+    const globalDurationValue = document.getElementById("globalDurationValue");
+
+    /****************************************************************
+     * STORAGE / VALIDATION
+     ****************************************************************/
+    function sanitizeUrl(url) {
+      return String(url || "").trim().replace(/&amp;/g, "&");
+    }
+
+    function isValidHttpUrl(value) {
+      try {
+        const u = new URL(value);
+        return u.protocol === "http:" || u.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function withCacheBuster(url) {
+      try {
+        const u = new URL(url);
+        u.searchParams.set("_cb", String(Date.now()));
+        return u.toString();
+      } catch {
+        return url;
+      }
+    }
+
+    function wrapIndex(index, length) {
+      if (!length) return 0;
+      return ((index % length) + length) % length;
+    }
+
+    function loadPages() {
+      try {
+        const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (!raw) return structuredClone(defaultPages);
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || !parsed.length) {
+          return structuredClone(defaultPages);
+        }
+
+        const cleaned = parsed
+          .filter(item => item && typeof item.name === "string" && typeof item.url === "string")
+          .map(item => ({
+            id: item.id || createId(),
+            name: item.name.trim() || "Untitled",
+            url: sanitizeUrl(item.url)
+          }))
+          .filter(item => isValidHttpUrl(item.url));
+
+        return cleaned.length ? cleaned : structuredClone(defaultPages);
+      } catch {
+        return structuredClone(defaultPages);
+      }
+    }
+
+    function savePages() {
+      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(pages));
+    }
+
+    function loadTvMode() {
+      try {
+        const raw = localStorage.getItem(CONFIG.STORAGE_TV_MODE);
+        return raw === null ? true : raw === "true";
+      } catch {
+        return true;
+      }
+    }
+
+    function saveTvMode() {
+      localStorage.setItem(CONFIG.STORAGE_TV_MODE, String(tvMode));
+    }
+
+    function loadGlobalDurationSec() {
+      try {
+        const raw = localStorage.getItem(CONFIG.STORAGE_GLOBAL_DURATION);
+        const value = parseInt(raw, 10);
+        if (Number.isFinite(value) && value >= CONFIG.MIN_ROTATE_SEC && value <= CONFIG.MAX_ROTATE_SEC) {
+          return value;
+        }
+      } catch {}
+      return CONFIG.DEFAULT_ROTATE_SEC;
+    }
+
+    function saveGlobalDurationSec(value) {
+      localStorage.setItem(CONFIG.STORAGE_GLOBAL_DURATION, String(value));
+    }
+
+    /****************************************************************
+     * UI HELPERS
+     ****************************************************************/
+    function showToast(message, timeout = 1600) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._id);
+      showToast._id = setTimeout(() => {
+        toast.classList.remove("show");
+      }, timeout);
+    }
+
+    function showReloadBadge(show) {
+      reloadBadge.classList.toggle("show", !!show);
+    }
+
+    function setLoading(show) {
+      loadingLine.classList.toggle("show", !!show);
+    }
+
+    function updateGlobalDurationUI() {
+      globalDurationSlider.value = String(globalRotateSec);
+      globalDurationValue.textContent = globalRotateSec + "s";
+    }
+
+    /****************************************************************
+     * TV MODE
+     ****************************************************************/
+    function applyTvMode() {
+      body.classList.toggle("tv-mode", tvMode);
+      tvBtn.style.borderColor = tvMode ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.12)";
+      tvBtn.style.background = tvMode ? "rgba(56,189,248,0.14)" : "rgba(255,255,255,0.05)";
+      if (!tvMode) {
+        body.classList.remove("hide-cursor");
+      } else {
+        scheduleCursorHide();
+      }
+    }
+
+    /****************************************************************
+     * FULLSCREEN
+     ****************************************************************/
+    async function requestFullscreenSafe() {
+      const el = document.documentElement;
+      if (document.fullscreenElement) return true;
+
+      try {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+          return true;
+        }
+      } catch {
+        // Browser có thể chặn nếu chưa có user gesture
+      }
+      return false;
+    }
+
+    function attemptFullscreenInitial() {
+      if (firstFullscreenAttempted) return;
+      firstFullscreenAttempted = true;
+      requestFullscreenSafe();
+    }
+
+    /****************************************************************
+     * NAV / CURSOR VISIBILITY
+     ****************************************************************/
+    function showNav() {
+      nav.classList.remove("hidden");
+      clearTimeout(navHideTimer);
+
+      if (managerPanel.classList.contains("open")) return;
+
+      navHideTimer = setTimeout(() => {
+        nav.classList.add("hidden");
+      }, CONFIG.NAV_HIDE_MS);
+    }
+
+    function keepNavVisible() {
+      clearTimeout(navHideTimer);
+      nav.classList.remove("hidden");
+    }
+
+    function showCursorIfNeeded() {
+      if (!tvMode) return;
+      body.classList.remove("hide-cursor");
+      clearTimeout(cursorHideTimer);
+      if (managerPanel.classList.contains("open")) return;
+      cursorHideTimer = setTimeout(() => {
+        body.classList.add("hide-cursor");
+      }, CONFIG.CURSOR_HIDE_MS);
+    }
+
+    function scheduleCursorHide() {
+      if (!tvMode) return;
+      clearTimeout(cursorHideTimer);
+      if (managerPanel.classList.contains("open")) {
+        body.classList.remove("hide-cursor");
+        return;
+      }
+      cursorHideTimer = setTimeout(() => {
+        body.classList.add("hide-cursor");
+      }, CONFIG.CURSOR_HIDE_MS);
+    }
+
+    /****************************************************************
+     * USER ACTIVITY
+     ****************************************************************/
+    function registerActivity() {
+      lastActivityAt = Date.now();
+      rotateCountdownStartAt = null;
+
+      showNav();
+      showCursorIfNeeded();
+      attemptFullscreenInitial();
+    }
+
+    function onMouseMove() {
+      const now = Date.now();
+      if (now - lastMouseMoveAt < 180) return;
+      lastMouseMoveAt = now;
+      registerActivity();
+    }
+
+    /****************************************************************
+     * PAGE RENDERING
+     ****************************************************************/
+    function renderTabs() {
+      tabsEl.innerHTML = "";
+      pages.forEach((page, index) => {
+        const btn = document.createElement("button");
+        btn.className = "tab" + (index === currentIndex ? " active" : "");
+        btn.type = "button";
+        btn.textContent = page.name;
+        btn.title = page.url;
+        btn.addEventListener("click", () => {
+          selectPage(index);
+        });
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function loadPage(index, options = {}) {
+      if (!pages.length) return;
+      currentIndex = wrapIndex(index, pages.length);
+
+      const page = pages[currentIndex];
+      const src = options.forceReload ? withCacheBuster(page.url) : page.url;
+
+      setLoading(true);
+      startLoadWatch();
+
+      frame.src = src;
+      renderTabs();
+    }
+
+    function reloadCurrentFrame() {
+      if (!pages.length) return;
+      showReloadBadge(true);
+      setTimeout(() => showReloadBadge(false), 1600);
+      loadPage(currentIndex, { forceReload: true });
+    }
+
+    function selectPage(index) {
+      loadPage(index);
+      registerActivity();
+    }
+
+    function nextPage(fromAuto = false) {
+      loadPage(currentIndex + 1);
+      if (fromAuto) {
+        rotateCountdownStartAt = Date.now();
+      } else {
+        registerActivity();
+      }
+    }
+
+    function prevPage() {
+      loadPage(currentIndex - 1);
+      registerActivity();
+    }
+
+    /****************************************************************
+     * PROGRESS BAR
+     ****************************************************************/
+    function setProgressIdle(percent) {
+      progressBar.classList.remove("rotate");
+      progressDot.classList.remove("rotate", "pause");
+      progressBar.style.width = Math.max(0, Math.min(100, percent)) + "%";
+    }
+
+    function setProgressRotate(percent) {
+      progressBar.classList.add("rotate");
+      progressDot.classList.add("rotate");
+      progressDot.classList.remove("pause");
+      progressBar.style.width = Math.max(0, Math.min(100, percent)) + "%";
+    }
+
+    function setProgressPause() {
+      progressBar.classList.remove("rotate");
+      progressDot.classList.remove("rotate");
+      progressDot.classList.add("pause");
+    }
+
+    /****************************************************************
+     * IFRAME AUTO RELOAD / LOAD WATCH
+     ****************************************************************/
+    function clearLoadWatch() {
+      clearTimeout(loadWatchTimer);
+      loadWatchTimer = null;
+    }
+
+    function startLoadWatch() {
+      clearLoadWatch();
+      loadWatchTimer = setTimeout(() => {
+        reloadCurrentFrame();
+      }, CONFIG.LOAD_TIMEOUT_MS);
+    }
+
+    frame.addEventListener("load", () => {
+      clearLoadWatch();
+      setLoading(false);
+    });
+
+    function startPeriodicRefresh() {
+      clearInterval(periodicRefreshTimer);
+      periodicRefreshTimer = setInterval(() => {
+        reloadCurrentFrame();
+      }, CONFIG.AUTO_REFRESH_MS);
+    }
+
+    /****************************************************************
+     * DYNAMIC PAGE MANAGER
+     ****************************************************************/
+    function openManager() {
+      managerPanel.classList.add("open");
+      keepNavVisible();
+      showCursorIfNeeded();
+      renderManager();
+    }
+
+    function closeManager() {
+      managerPanel.classList.remove("open");
+      showNav();
+      scheduleCursorHide();
+    }
+
+    function renderManager() {
+      managerList.innerHTML = "";
+
+      if (!pages.length) {
+        const empty = document.createElement("div");
+        empty.style.color = "var(--muted)";
+        empty.style.fontSize = "13px";
+        empty.textContent = "Chưa có page nào.";
+        managerList.appendChild(empty);
+        return;
+      }
+
+      pages.forEach((page, index) => {
+        const row = document.createElement("div");
+        row.className = "manager-item";
+
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = (index + 1) + ". " + page.name;
+        name.title = page.name;
+
+        const goBtn = document.createElement("button");
+        goBtn.className = "mini-btn";
+        goBtn.textContent = "Mở";
+        goBtn.addEventListener("click", () => {
+          selectPage(index);
+          closeManager();
+        });
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "mini-btn";
+        editBtn.textContent = "Sửa";
+        editBtn.addEventListener("click", () => {
+          editPage(page.id);
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "mini-btn";
+        delBtn.textContent = "Xóa";
+        delBtn.addEventListener("click", () => {
+          removePage(page.id);
+        });
+
+        const url = document.createElement("div");
+        url.className = "url";
+        url.textContent = page.url;
+
+        row.appendChild(name);
+        row.appendChild(goBtn);
+        row.appendChild(editBtn);
+        row.appendChild(delBtn);
+        row.appendChild(url);
+
+        managerList.appendChild(row);
+      });
+    }
+
+    function addPage() {
+      const name = prompt("Tên page:");
+      if (name === null) return;
+
+      const urlInput = prompt("URL page (http / https):");
+      if (urlInput === null) return;
+
+      const cleanName = String(name).trim();
+      const cleanUrl = sanitizeUrl(urlInput);
+
+      if (!cleanName) {
+        alert("Tên page không được để trống.");
+        return;
+      }
+
+      if (!isValidHttpUrl(cleanUrl)) {
+        alert("URL không hợp lệ. Hãy nhập đúng định dạng http:// hoặc https://");
+        return;
+      }
+
+      pages.push({
+        id: createId(),
+        name: cleanName,
+        url: cleanUrl
+      });
+
+      savePages();
+      renderTabs();
+      renderManager();
+
+      currentIndex = pages.length - 1;
+      loadPage(currentIndex);
+      registerActivity();
+      showToast("Đã thêm page");
+    }
+
+    function editPage(id) {
+      const page = pages.find(p => p.id === id);
+      if (!page) return;
+
+      const newName = prompt("Sửa tên page:", page.name);
+      if (newName === null) return;
+
+      const newUrl = prompt("Sửa URL:", page.url);
+      if (newUrl === null) return;
+
+      const cleanName = String(newName).trim();
+      const cleanUrl = sanitizeUrl(newUrl);
+
+      if (!cleanName) {
+        alert("Tên page không được để trống.");
+        return;
+      }
+
+      if (!isValidHttpUrl(cleanUrl)) {
+        alert("URL không hợp lệ.");
+        return;
+      }
+
+      page.name = cleanName;
+      page.url = cleanUrl;
+
+      savePages();
+      renderTabs();
+      renderManager();
+
+      if (pages[currentIndex] && pages[currentIndex].id === id) {
+        loadPage(currentIndex, { forceReload: true });
+      }
+
+      registerActivity();
+      showToast("Đã cập nhật page");
+    }
+
+    function removePage(id) {
+      if (pages.length <= 1) {
+        alert("Cần giữ ít nhất 1 page.");
+        return;
+      }
+
+      const idx = pages.findIndex(p => p.id === id);
+      if (idx < 0) return;
+
+      const ok = confirm("Xóa page này?");
+      if (!ok) return;
+
+      const deletingCurrent = idx === currentIndex;
+      pages.splice(idx, 1);
+
+      if (currentIndex >= pages.length) {
+        currentIndex = pages.length - 1;
+      }
+
+      savePages();
+      renderTabs();
+      renderManager();
+
+      if (deletingCurrent) {
+        loadPage(currentIndex);
+      } else {
+        renderTabs();
+      }
+
+      registerActivity();
+      showToast("Đã xóa page");
+    }
+
+    function resetDefaultPages() {
+      const ok = confirm("Reset về danh sách page mặc định?");
+      if (!ok) return;
+
+      pages = structuredClone(defaultPages);
+      savePages();
+      currentIndex = 0;
+      renderTabs();
+      renderManager();
+      loadPage(0);
+      registerActivity();
+      showToast("Đã reset mặc định");
+    }
+
+    /****************************************************************
+     * GLOBAL ROTATE DURATION SLIDER
+     ****************************************************************/
+    function setGlobalRotateSec(newValue, fromUser = false) {
+      const parsed = parseInt(newValue, 10);
+      const clamped = Math.max(CONFIG.MIN_ROTATE_SEC, Math.min(CONFIG.MAX_ROTATE_SEC, Number.isFinite(parsed) ? parsed : CONFIG.DEFAULT_ROTATE_SEC));
+
+      globalRotateSec = clamped;
+      saveGlobalDurationSec(globalRotateSec);
+      updateGlobalDurationUI();
+
+      // reset timer để áp dụng ngay duration mới
+      rotateCountdownStartAt = null;
+
+      if (fromUser) {
+        registerActivity();
+        showToast("Duration: " + globalRotateSec + "s");
+      }
+    }
+
+    globalDurationSlider.addEventListener("input", () => {
+      setGlobalRotateSec(globalDurationSlider.value, true);
+    });
+
+    /****************************************************************
+     * LOOP CHÍNH
+     * - Idle 10s -> vào auto mode
+     * - Sau khi auto mode đã bắt đầu thì rotate liên tục theo globalRotateSec/page
+     * - Nếu user thao tác lại -> reset về chế độ chờ idle 10s
+     ****************************************************************/
+    function tick() {
+      if (manualPaused) {
+        setProgressPause();
+        requestAnimationFrame(tick);
+        return;
+      }
+
+      const now = Date.now();
+      const idleElapsed = now - lastActivityAt;
+
+      if (idleElapsed < CONFIG.IDLE_BEFORE_ROTATE_MS) {
+        const idlePercent = (idleElapsed / CONFIG.IDLE_BEFORE_ROTATE_MS) * 100;
+        setProgressIdle(idlePercent);
+      } else {
+        if (!rotateCountdownStartAt) {
+          rotateCountdownStartAt = now;
+        }
+
+        const rotateElapsed = now - rotateCountdownStartAt;
+        const currentRotateMs = globalRotateSec * 1000;
+        const rotatePercent = (rotateElapsed / currentRotateMs) * 100;
+        setProgressRotate(rotatePercent);
+
+        if (rotateElapsed >= currentRotateMs) {
+          nextPage(true);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    /****************************************************************
+     * EVENTS
+     ****************************************************************/
+    prevBtn.addEventListener("click", prevPage);
+
+    nextBtn.addEventListener("click", () => {
+      nextPage(false);
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      manualPaused = !manualPaused;
+      pauseBtn.textContent = manualPaused ? "▶" : "⏸";
+
+      if (!manualPaused) {
+        lastActivityAt = Date.now();
+        rotateCountdownStartAt = null;
+      }
+
+      registerActivity();
+    });
+
+    addBtn.addEventListener("click", addPage);
+
+    manageBtn.addEventListener("click", () => {
+      if (managerPanel.classList.contains("open")) {
+        closeManager();
+      } else {
+        openManager();
+      }
+      registerActivity();
+    });
+
+    tvBtn.addEventListener("click", () => {
+      tvMode = !tvMode;
+      saveTvMode();
+      applyTvMode();
+      registerActivity();
+      showToast(tvMode ? "TV mode bật" : "TV mode tắt");
+    });
+
+    fsBtn.addEventListener("click", async () => {
+      const ok = await requestFullscreenSafe();
+      registerActivity();
+      if (!ok) {
+        showToast("Trình duyệt chặn fullscreen tự động");
+      }
+    });
+
+    closeManagerBtn.addEventListener("click", closeManager);
+    managerAddBtn.addEventListener("click", addPage);
+    resetDefaultBtn.addEventListener("click", resetDefaultPages);
+    reloadNowBtn.addEventListener("click", () => {
+      reloadCurrentFrame();
+      registerActivity();
+    });
+
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mousedown", registerActivity, { passive: true });
+    document.addEventListener("click", registerActivity, { passive: true });
+    document.addEventListener("wheel", registerActivity, { passive: true });
+    document.addEventListener("touchstart", registerActivity, { passive: true });
+    document.addEventListener("pointerdown", registerActivity, { passive: true });
+    document.addEventListener("keydown", registerActivity);
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        registerActivity();
+      }
+    });
+
+    window.addEventListener("load", () => {
+      attemptFullscreenInitial();
+    });
+
+    /****************************************************************
+     * INIT
+     ****************************************************************/
+    function init() {
+      updateGlobalDurationUI();
+      applyTvMode();
+      renderTabs();
+      renderManager();
+      loadPage(0);
+      showNav();
+      showCursorIfNeeded();
+      startPeriodicRefresh();
+      tick();
+    }
+
+    init();
+  </script>
+</body>
+</html>
