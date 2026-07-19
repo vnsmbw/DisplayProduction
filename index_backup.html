@@ -2,12 +2,8 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interactive Screen Rotator</title>
-
   <style>
     :root{
       --bg: #000;
@@ -63,9 +59,9 @@
       border: 0;
       display: block;
       background: #fff;
-      touch-action: auto;
     }
 
+    /* Floating navigation bottom-center */
     .floating-nav {
       position: absolute;
       left: 50%;
@@ -91,12 +87,6 @@
       opacity: 0;
       transform: translateX(-50%) translateY(28px);
       pointer-events: none;
-    }
-
-    body.interaction-mode .floating-nav {
-      opacity: 0;
-      pointer-events: none;
-      transform: translateX(-50%) translateY(28px);
     }
 
     .nav-left, .nav-center, .nav-right {
@@ -132,9 +122,6 @@
       cursor: pointer;
       transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
       white-space: nowrap;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     .btn:hover, .tab:hover {
@@ -199,6 +186,7 @@
       box-shadow: 0 0 0 3px rgba(239,68,68,0.16);
     }
 
+    /* Slider duration */
     .duration-control {
       display: flex;
       align-items: center;
@@ -234,7 +222,6 @@
       outline: none;
       cursor: pointer;
       overflow: hidden;
-      touch-action: manipulation;
     }
 
     .duration-slider::-webkit-slider-runnable-track {
@@ -355,9 +342,6 @@
       padding: 8px 10px;
       font-size: 12px;
       cursor: pointer;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     .toast {
@@ -429,70 +413,6 @@
       100% { width: 0%; left: 100%; }
     }
 
-    .touch-handle {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      z-index: 80;
-      width: 58px;
-      height: 58px;
-      padding: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 16px;
-      background: rgba(10,18,30,0.88);
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    .touch-handle:active {
-      transform: scale(0.96);
-    }
-
-    body.tv-mode .touch-handle,
-    body.interaction-mode .touch-handle {
-      display: flex;
-    }
-
-    /*
-      Toast riêng cho Interaction Mode.
-      Không phải button, không click được, tự tắt.
-    */
-    .interaction-toast {
-      position: absolute;
-      left: 50%;
-      bottom: 96px;
-      transform: translateX(-50%) translateY(12px);
-      z-index: 90;
-      max-width: min(520px, calc(100vw - 28px));
-      padding: 12px 18px;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 16px;
-      background: rgba(10,18,30,0.92);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      transition: opacity 0.22s ease, transform 0.22s ease;
-    }
-
-    .interaction-toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
     @media (max-width: 1180px) {
       .floating-nav {
         grid-template-columns: 1fr;
@@ -513,96 +433,13 @@
         min-width: 240px;
       }
     }
-
-    @media (hover: none) and (pointer: coarse) {
-      :root {
-        --nav-bottom: 10px;
-      }
-
-      .floating-nav {
-        width: calc(100vw - 16px);
-        padding: 14px;
-        gap: 12px;
-      }
-
-      .btn,
-      .tab {
-        min-height: 56px;
-        padding: 14px 18px;
-        border-radius: 15px;
-        font-size: 16px;
-      }
-
-      .icon-btn {
-        min-width: 58px;
-        min-height: 58px;
-        font-size: 22px;
-      }
-
-      .mini-btn {
-        min-height: 52px;
-        padding: 12px 16px;
-        font-size: 15px;
-      }
-
-      .duration-control {
-        min-height: 58px;
-        min-width: 320px;
-      }
-
-      .duration-slider {
-        width: 210px;
-        height: 10px;
-      }
-
-      .duration-slider::-webkit-slider-runnable-track {
-        height: 10px;
-      }
-
-      .duration-slider::-webkit-slider-thumb {
-        width: 28px;
-        height: 28px;
-        margin-top: -9px;
-      }
-
-      .progress-wrap {
-        height: 14px;
-      }
-
-      .btn:hover,
-      .tab:hover {
-        transform: none;
-      }
-
-      .btn:active,
-      .tab:active,
-      .mini-btn:active {
-        transform: scale(0.96);
-        background: rgba(255,255,255,0.14);
-      }
-
-      .manager {
-        right: 8px;
-        bottom: 90px;
-        width: calc(100vw - 16px);
-        max-height: 75vh;
-      }
-
-      .interaction-toast {
-        bottom: 86px;
-        font-size: 16px;
-        padding: 14px 18px;
-      }
-    }
   </style>
 </head>
-
 <body>
   <div class="app" id="app">
     <div class="viewer">
       <div class="loading-line" id="loadingLine"></div>
       <div class="reload-badge" id="reloadBadge">Đang tải lại iframe...</div>
-
       <iframe
         id="frame"
         title="Interactive dashboard rotator"
@@ -611,10 +448,11 @@
       </iframe>
     </div>
 
+    <!-- Bottom center floating navigation -->
     <div class="floating-nav" id="nav">
       <div class="nav-left">
-        <button class="btn icon-btn" id="prevBtn" type="button" title="Trang trước">◀</button>
-        <button class="btn icon-btn" id="nextBtn" type="button" title="Trang sau">▶</button>
+        <button class="btn icon-btn" id="prevBtn" title="Trang trước">◀</button>
+        <button class="btn icon-btn" id="nextBtn" title="Trang sau">▶</button>
       </div>
 
       <div class="nav-center">
@@ -623,11 +461,11 @@
 
       <div class="nav-right">
         <div class="progress-dot" id="progressDot" title="Trạng thái"></div>
-
         <div class="progress-wrap" title="Tiến trình idle / rotate">
           <div class="progress-bar" id="progressBar"></div>
         </div>
 
+        <!-- NEW: Global duration slider -->
         <div class="duration-control" title="Thời gian rotate áp dụng cho tất cả page">
           <span class="duration-label">Duration</span>
           <input
@@ -642,45 +480,29 @@
           <span class="duration-value" id="globalDurationValue">20s</span>
         </div>
 
-        <button class="btn icon-btn" id="pauseBtn" type="button" title="Tạm dừng / tiếp tục">⏸</button>
-        <button class="btn icon-btn" id="interactBtn" type="button" title="Bật chế độ tương tác iframe">👆</button>
-        <button class="btn icon-btn" id="addBtn" type="button" title="Thêm page">＋</button>
-        <button class="btn icon-btn" id="manageBtn" type="button" title="Quản lý page">⚙</button>
-        <button class="btn icon-btn" id="tvBtn" type="button" title="TV mode">📺</button>
-        <button class="btn icon-btn" id="fsBtn" type="button" title="Fullscreen">⛶</button>
+        <button class="btn icon-btn" id="pauseBtn" title="Tạm dừng / tiếp tục">⏸</button>
+        <button class="btn icon-btn" id="addBtn" title="Thêm page">＋</button>
+        <button class="btn icon-btn" id="manageBtn" title="Quản lý page">⚙</button>
+        <button class="btn icon-btn" id="tvBtn" title="TV mode">📺</button>
+        <button class="btn icon-btn" id="fsBtn" title="Fullscreen">⛶</button>
       </div>
     </div>
 
+    <!-- Manager panel -->
     <div class="manager" id="managerPanel">
       <div class="manager-head">
         <div class="manager-title">Quản lý page</div>
-        <button class="mini-btn" id="closeManagerBtn" type="button">Đóng</button>
+        <button class="mini-btn" id="closeManagerBtn">Đóng</button>
       </div>
-
       <div class="manager-sub">
         Danh sách được lưu bằng localStorage trên chính trình duyệt / thiết bị này.
       </div>
-
       <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-        <button class="mini-btn" id="managerAddBtn" type="button">+ Thêm page</button>
-        <button class="mini-btn" id="resetDefaultBtn" type="button">Reset mặc định</button>
-        <button class="mini-btn" id="reloadNowBtn" type="button">Reload iframe</button>
+        <button class="mini-btn" id="managerAddBtn">+ Thêm page</button>
+        <button class="mini-btn" id="resetDefaultBtn">Reset mặc định</button>
+        <button class="mini-btn" id="reloadNowBtn">Reload iframe</button>
       </div>
-
       <div class="manager-list" id="managerList"></div>
-    </div>
-
-    <button
-      class="touch-handle"
-      id="touchHandle"
-      type="button"
-      aria-label="Mở điều khiển"
-      title="Mở điều khiển">
-      ☰
-    </button>
-
-    <div class="interaction-toast" id="interactionToast">
-      Đã bật chế độ tương tác
     </div>
 
     <div class="toast" id="toast"></div>
@@ -690,25 +512,18 @@
     /****************************************************************
      * CONFIG
      ****************************************************************/
-    const isCoarsePointer = window.matchMedia &&
-      window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-
     const CONFIG = {
-      STORAGE_KEY: "interactive_rotator_pages_v8",
-      STORAGE_TV_MODE: "interactive_rotator_tv_mode_v8",
-      STORAGE_GLOBAL_DURATION: "interactive_rotator_global_duration_v8",
-
+      STORAGE_KEY: "interactive_rotator_pages_v6",
+      STORAGE_TV_MODE: "interactive_rotator_tv_mode_v6",
+      STORAGE_GLOBAL_DURATION: "interactive_rotator_global_duration_v6",
       DEFAULT_ROTATE_SEC: 20,
       MIN_ROTATE_SEC: 5,
       MAX_ROTATE_SEC: 120,
-
-      IDLE_BEFORE_ROTATE_MS: 10000,
-      NAV_HIDE_MS: isCoarsePointer ? 6000 : 2500,
-      CURSOR_HIDE_MS: isCoarsePointer ? 3500 : 2200,
-
-      LOAD_TIMEOUT_MS: 25000,
-      AUTO_REFRESH_MS: 30 * 60 * 1000,
-      TICK_PAINT_INTERVAL_MS: 100
+      IDLE_BEFORE_ROTATE_MS: 10000,   // user idle 10s thì mới vào auto mode
+      NAV_HIDE_MS: 2500,              // nav ẩn sau 2.5s không tương tác
+      CURSOR_HIDE_MS: 2200,           // TV mode: ẩn con trỏ sau 2.2s
+      LOAD_TIMEOUT_MS: 25000,         // nếu iframe không load xong trong 25s -> tự reload
+      AUTO_REFRESH_MS: 30 * 60 * 1000 // refresh định kỳ 30 phút để tránh treo lâu
     };
 
     /****************************************************************
@@ -718,16 +533,9 @@
       return "id_" + Math.random().toString(36).slice(2, 10);
     }
 
-    function clonePages(input) {
-      if (typeof structuredClone === "function") {
-        return structuredClone(input);
-      }
-
-      return JSON.parse(JSON.stringify(input));
-    }
-
     /****************************************************************
      * DEFAULT PAGES
+     * Lưu ý: trong JavaScript string phải dùng '&' thật, KHÔNG dùng '&amp;'
      ****************************************************************/
     const defaultPages = [
       {
@@ -759,7 +567,6 @@
     let currentIndex = 0;
 
     let manualPaused = false;
-    let interactionMode = false;
     let tvMode = loadTvMode();
 
     let globalRotateSec = loadGlobalDurationSec();
@@ -773,7 +580,6 @@
     let periodicRefreshTimer = null;
     let firstFullscreenAttempted = false;
     let lastMouseMoveAt = 0;
-    let lastTickPaintAt = 0;
 
     /****************************************************************
      * DOM
@@ -787,7 +593,6 @@
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const pauseBtn = document.getElementById("pauseBtn");
-    const interactBtn = document.getElementById("interactBtn");
     const addBtn = document.getElementById("addBtn");
     const manageBtn = document.getElementById("manageBtn");
     const tvBtn = document.getElementById("tvBtn");
@@ -810,17 +615,11 @@
     const globalDurationSlider = document.getElementById("globalDurationSlider");
     const globalDurationValue = document.getElementById("globalDurationValue");
 
-    const touchHandle = document.getElementById("touchHandle");
-    const interactionToast = document.getElementById("interactionToast");
-
     /****************************************************************
      * STORAGE / VALIDATION
      ****************************************************************/
     function sanitizeUrl(url) {
-      return String(url || "")
-        .trim()
-        .replace(/&amp;amp;/g, "&")
-        .replace(/&amp;/g, "&");
+      return String(url || "").trim().replace(/&amp;/g, "&");
     }
 
     function isValidHttpUrl(value) {
@@ -850,11 +649,11 @@
     function loadPages() {
       try {
         const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
-        if (!raw) return clonePages(defaultPages);
+        if (!raw) return structuredClone(defaultPages);
 
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed) || !parsed.length) {
-          return clonePages(defaultPages);
+          return structuredClone(defaultPages);
         }
 
         const cleaned = parsed
@@ -866,9 +665,9 @@
           }))
           .filter(item => isValidHttpUrl(item.url));
 
-        return cleaned.length ? cleaned : clonePages(defaultPages);
+        return cleaned.length ? cleaned : structuredClone(defaultPages);
       } catch {
-        return clonePages(defaultPages);
+        return structuredClone(defaultPages);
       }
     }
 
@@ -893,16 +692,10 @@
       try {
         const raw = localStorage.getItem(CONFIG.STORAGE_GLOBAL_DURATION);
         const value = parseInt(raw, 10);
-
-        if (
-          Number.isFinite(value) &&
-          value >= CONFIG.MIN_ROTATE_SEC &&
-          value <= CONFIG.MAX_ROTATE_SEC
-        ) {
+        if (Number.isFinite(value) && value >= CONFIG.MIN_ROTATE_SEC && value <= CONFIG.MAX_ROTATE_SEC) {
           return value;
         }
       } catch {}
-
       return CONFIG.DEFAULT_ROTATE_SEC;
     }
 
@@ -916,20 +709,9 @@
     function showToast(message, timeout = 1600) {
       toast.textContent = message;
       toast.classList.add("show");
-
       clearTimeout(showToast._id);
       showToast._id = setTimeout(() => {
         toast.classList.remove("show");
-      }, timeout);
-    }
-
-    function showInteractionToast(message, timeout = 1600) {
-      interactionToast.textContent = message;
-      interactionToast.classList.add("show");
-
-      clearTimeout(showInteractionToast._id);
-      showInteractionToast._id = setTimeout(() => {
-        interactionToast.classList.remove("show");
       }, timeout);
     }
 
@@ -946,34 +728,13 @@
       globalDurationValue.textContent = globalRotateSec + "s";
     }
 
-    function updatePauseButtonUI() {
-      pauseBtn.textContent = manualPaused ? "▶" : "⏸";
-    }
-
-    function updateInteractButtonUI() {
-      interactBtn.style.borderColor = interactionMode
-        ? "rgba(34,197,94,0.65)"
-        : "rgba(255,255,255,0.12)";
-
-      interactBtn.style.background = interactionMode
-        ? "rgba(34,197,94,0.16)"
-        : "rgba(255,255,255,0.05)";
-    }
-
     /****************************************************************
      * TV MODE
      ****************************************************************/
     function applyTvMode() {
       body.classList.toggle("tv-mode", tvMode);
-
-      tvBtn.style.borderColor = tvMode
-        ? "rgba(56,189,248,0.55)"
-        : "rgba(255,255,255,0.12)";
-
-      tvBtn.style.background = tvMode
-        ? "rgba(56,189,248,0.14)"
-        : "rgba(255,255,255,0.05)";
-
+      tvBtn.style.borderColor = tvMode ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.12)";
+      tvBtn.style.background = tvMode ? "rgba(56,189,248,0.14)" : "rgba(255,255,255,0.05)";
       if (!tvMode) {
         body.classList.remove("hide-cursor");
       } else {
@@ -993,8 +754,9 @@
           await el.requestFullscreen();
           return true;
         }
-      } catch {}
-
+      } catch {
+        // Browser có thể chặn nếu chưa có user gesture
+      }
       return false;
     }
 
@@ -1008,8 +770,6 @@
      * NAV / CURSOR VISIBILITY
      ****************************************************************/
     function showNav() {
-      if (interactionMode) return;
-
       nav.classList.remove("hidden");
       clearTimeout(navHideTimer);
 
@@ -1021,20 +781,15 @@
     }
 
     function keepNavVisible() {
-      if (interactionMode) return;
-
       clearTimeout(navHideTimer);
       nav.classList.remove("hidden");
     }
 
     function showCursorIfNeeded() {
       if (!tvMode) return;
-
       body.classList.remove("hide-cursor");
       clearTimeout(cursorHideTimer);
-
-      if (managerPanel.classList.contains("open") || interactionMode) return;
-
+      if (managerPanel.classList.contains("open")) return;
       cursorHideTimer = setTimeout(() => {
         body.classList.add("hide-cursor");
       }, CONFIG.CURSOR_HIDE_MS);
@@ -1042,14 +797,11 @@
 
     function scheduleCursorHide() {
       if (!tvMode) return;
-
       clearTimeout(cursorHideTimer);
-
-      if (managerPanel.classList.contains("open") || interactionMode) {
+      if (managerPanel.classList.contains("open")) {
         body.classList.remove("hide-cursor");
         return;
       }
-
       cursorHideTimer = setTimeout(() => {
         body.classList.add("hide-cursor");
       }, CONFIG.CURSOR_HIDE_MS);
@@ -1059,8 +811,6 @@
      * USER ACTIVITY
      ****************************************************************/
     function registerActivity() {
-      if (interactionMode) return;
-
       lastActivityAt = Date.now();
       rotateCountdownStartAt = null;
 
@@ -1072,17 +822,8 @@
     function onMouseMove() {
       const now = Date.now();
       if (now - lastMouseMoveAt < 180) return;
-
       lastMouseMoveAt = now;
       registerActivity();
-    }
-
-    function onParentPointerActivity() {
-      registerActivity();
-    }
-
-    function stopUiEvent(event) {
-      event.stopPropagation();
     }
 
     /****************************************************************
@@ -1090,27 +831,21 @@
      ****************************************************************/
     function renderTabs() {
       tabsEl.innerHTML = "";
-
       pages.forEach((page, index) => {
         const btn = document.createElement("button");
         btn.className = "tab" + (index === currentIndex ? " active" : "");
         btn.type = "button";
         btn.textContent = page.name;
         btn.title = page.url;
-
-        btn.addEventListener("pointerup", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        btn.addEventListener("click", () => {
           selectPage(index);
         });
-
         tabsEl.appendChild(btn);
       });
     }
 
     function loadPage(index, options = {}) {
       if (!pages.length) return;
-
       currentIndex = wrapIndex(index, pages.length);
 
       const page = pages[currentIndex];
@@ -1125,10 +860,8 @@
 
     function reloadCurrentFrame() {
       if (!pages.length) return;
-
       showReloadBadge(true);
       setTimeout(() => showReloadBadge(false), 1600);
-
       loadPage(currentIndex, { forceReload: true });
     }
 
@@ -1139,7 +872,6 @@
 
     function nextPage(fromAuto = false) {
       loadPage(currentIndex + 1);
-
       if (fromAuto) {
         rotateCountdownStartAt = Date.now();
       } else {
@@ -1184,11 +916,8 @@
 
     function startLoadWatch() {
       clearLoadWatch();
-
       loadWatchTimer = setTimeout(() => {
-        if (!interactionMode) {
-          reloadCurrentFrame();
-        }
+        reloadCurrentFrame();
       }, CONFIG.LOAD_TIMEOUT_MS);
     }
 
@@ -1199,62 +928,15 @@
 
     function startPeriodicRefresh() {
       clearInterval(periodicRefreshTimer);
-
       periodicRefreshTimer = setInterval(() => {
-        if (!interactionMode) {
-          reloadCurrentFrame();
-        }
+        reloadCurrentFrame();
       }, CONFIG.AUTO_REFRESH_MS);
-    }
-
-    /****************************************************************
-     * INTERACTION MODE
-     ****************************************************************/
-    function setInteractionMode(enabled) {
-      interactionMode = !!enabled;
-      body.classList.toggle("interaction-mode", interactionMode);
-
-      updateInteractButtonUI();
-
-      if (interactionMode) {
-        manualPaused = true;
-        updatePauseButtonUI();
-
-        clearTimeout(navHideTimer);
-        clearTimeout(cursorHideTimer);
-
-        nav.classList.add("hidden");
-        body.classList.remove("hide-cursor");
-
-        setProgressPause();
-
-        /*
-          Quan trọng:
-          Không hiện block "Thoát tương tác".
-          Chỉ hiện thông báo ngắn rồi tự tắt.
-          Người dùng thoát bằng nút menu ☰ bên phải.
-        */
-        showInteractionToast("Đã bật chế độ tương tác", 1700);
-      } else {
-        manualPaused = false;
-        updatePauseButtonUI();
-
-        lastActivityAt = Date.now();
-        rotateCountdownStartAt = null;
-
-        showNav();
-        scheduleCursorHide();
-
-        showInteractionToast("Đã thoát chế độ tương tác", 1400);
-      }
     }
 
     /****************************************************************
      * DYNAMIC PAGE MANAGER
      ****************************************************************/
     function openManager() {
-      if (interactionMode) return;
-
       managerPanel.classList.add("open");
       keepNavVisible();
       showCursorIfNeeded();
@@ -1290,32 +972,23 @@
 
         const goBtn = document.createElement("button");
         goBtn.className = "mini-btn";
-        goBtn.type = "button";
         goBtn.textContent = "Mở";
-        goBtn.addEventListener("pointerup", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        goBtn.addEventListener("click", () => {
           selectPage(index);
           closeManager();
         });
 
         const editBtn = document.createElement("button");
         editBtn.className = "mini-btn";
-        editBtn.type = "button";
         editBtn.textContent = "Sửa";
-        editBtn.addEventListener("pointerup", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        editBtn.addEventListener("click", () => {
           editPage(page.id);
         });
 
         const delBtn = document.createElement("button");
         delBtn.className = "mini-btn";
-        delBtn.type = "button";
         delBtn.textContent = "Xóa";
-        delBtn.addEventListener("pointerup", event => {
-          event.preventDefault();
-          event.stopPropagation();
+        delBtn.addEventListener("click", () => {
           removePage(page.id);
         });
 
@@ -1444,15 +1117,12 @@
       const ok = confirm("Reset về danh sách page mặc định?");
       if (!ok) return;
 
-      pages = clonePages(defaultPages);
+      pages = structuredClone(defaultPages);
       savePages();
-
       currentIndex = 0;
-
       renderTabs();
       renderManager();
       loadPage(0);
-
       registerActivity();
       showToast("Đã reset mặc định");
     }
@@ -1462,17 +1132,13 @@
      ****************************************************************/
     function setGlobalRotateSec(newValue, fromUser = false) {
       const parsed = parseInt(newValue, 10);
-      const safeValue = Number.isFinite(parsed) ? parsed : CONFIG.DEFAULT_ROTATE_SEC;
-
-      const clamped = Math.max(
-        CONFIG.MIN_ROTATE_SEC,
-        Math.min(CONFIG.MAX_ROTATE_SEC, safeValue)
-      );
+      const clamped = Math.max(CONFIG.MIN_ROTATE_SEC, Math.min(CONFIG.MAX_ROTATE_SEC, Number.isFinite(parsed) ? parsed : CONFIG.DEFAULT_ROTATE_SEC));
 
       globalRotateSec = clamped;
       saveGlobalDurationSec(globalRotateSec);
       updateGlobalDurationUI();
 
+      // reset timer để áp dụng ngay duration mới
       rotateCountdownStartAt = null;
 
       if (fromUser) {
@@ -1482,28 +1148,19 @@
     }
 
     globalDurationSlider.addEventListener("input", () => {
-      const value = parseInt(globalDurationSlider.value, 10);
-      globalDurationValue.textContent = value + "s";
-    });
-
-    globalDurationSlider.addEventListener("change", () => {
       setGlobalRotateSec(globalDurationSlider.value, true);
     });
 
     /****************************************************************
-     * MAIN LOOP
+     * LOOP CHÍNH
+     * - Idle 10s -> vào auto mode
+     * - Sau khi auto mode đã bắt đầu thì rotate liên tục theo globalRotateSec/page
+     * - Nếu user thao tác lại -> reset về chế độ chờ idle 10s
      ****************************************************************/
-    function tick(nowPerf) {
-      requestAnimationFrame(tick);
-
-      if (nowPerf - lastTickPaintAt < CONFIG.TICK_PAINT_INTERVAL_MS) {
-        return;
-      }
-
-      lastTickPaintAt = nowPerf;
-
-      if (manualPaused || interactionMode) {
+    function tick() {
+      if (manualPaused) {
         setProgressPause();
+        requestAnimationFrame(tick);
         return;
       }
 
@@ -1513,53 +1170,36 @@
       if (idleElapsed < CONFIG.IDLE_BEFORE_ROTATE_MS) {
         const idlePercent = (idleElapsed / CONFIG.IDLE_BEFORE_ROTATE_MS) * 100;
         setProgressIdle(idlePercent);
-        return;
+      } else {
+        if (!rotateCountdownStartAt) {
+          rotateCountdownStartAt = now;
+        }
+
+        const rotateElapsed = now - rotateCountdownStartAt;
+        const currentRotateMs = globalRotateSec * 1000;
+        const rotatePercent = (rotateElapsed / currentRotateMs) * 100;
+        setProgressRotate(rotatePercent);
+
+        if (rotateElapsed >= currentRotateMs) {
+          nextPage(true);
+        }
       }
 
-      if (!rotateCountdownStartAt) {
-        rotateCountdownStartAt = now;
-      }
-
-      const rotateElapsed = now - rotateCountdownStartAt;
-      const currentRotateMs = globalRotateSec * 1000;
-      const rotatePercent = (rotateElapsed / currentRotateMs) * 100;
-
-      setProgressRotate(rotatePercent);
-
-      if (rotateElapsed >= currentRotateMs) {
-        nextPage(true);
-      }
+      requestAnimationFrame(tick);
     }
 
     /****************************************************************
      * EVENTS
      ****************************************************************/
-    nav.addEventListener("pointerdown", stopUiEvent);
-    managerPanel.addEventListener("pointerdown", stopUiEvent);
+    prevBtn.addEventListener("click", prevPage);
 
-    prevBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      prevPage();
-    });
-
-    nextBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
+    nextBtn.addEventListener("click", () => {
       nextPage(false);
     });
 
-    pauseBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (interactionMode) {
-        setInteractionMode(false);
-        return;
-      }
-
+    pauseBtn.addEventListener("click", () => {
       manualPaused = !manualPaused;
-      updatePauseButtonUI();
+      pauseBtn.textContent = manualPaused ? "▶" : "⏸";
 
       if (!manualPaused) {
         lastActivityAt = Date.now();
@@ -1569,116 +1209,51 @@
       registerActivity();
     });
 
-    interactBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
+    addBtn.addEventListener("click", addPage);
 
-      setInteractionMode(true);
-    });
-
-    addBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      addPage();
-    });
-
-    manageBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
+    manageBtn.addEventListener("click", () => {
       if (managerPanel.classList.contains("open")) {
         closeManager();
       } else {
         openManager();
       }
-
       registerActivity();
     });
 
-    tvBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
+    tvBtn.addEventListener("click", () => {
       tvMode = !tvMode;
       saveTvMode();
       applyTvMode();
       registerActivity();
-
       showToast(tvMode ? "TV mode bật" : "TV mode tắt");
     });
 
-    fsBtn.addEventListener("pointerup", async event => {
-      event.preventDefault();
-      event.stopPropagation();
-
+    fsBtn.addEventListener("click", async () => {
       const ok = await requestFullscreenSafe();
       registerActivity();
-
       if (!ok) {
         showToast("Trình duyệt chặn fullscreen tự động");
       }
     });
 
-    closeManagerBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      closeManager();
-    });
-
-    managerAddBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      addPage();
-    });
-
-    resetDefaultBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      resetDefaultPages();
-    });
-
-    reloadNowBtn.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
+    closeManagerBtn.addEventListener("click", closeManager);
+    managerAddBtn.addEventListener("click", addPage);
+    resetDefaultBtn.addEventListener("click", resetDefaultPages);
+    reloadNowBtn.addEventListener("click", () => {
       reloadCurrentFrame();
       registerActivity();
     });
 
-    touchHandle.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      /*
-        Nếu đang ở chế độ tương tác:
-        bấm menu ☰ bên phải để thoát chế độ tương tác.
-      */
-      if (interactionMode) {
-        setInteractionMode(false);
-        return;
-      }
-
-      lastActivityAt = Date.now();
-      rotateCountdownStartAt = null;
-
-      keepNavVisible();
-      showNav();
-      showCursorIfNeeded();
-    });
-
-    if (window.PointerEvent) {
-      document.addEventListener("pointerdown", onParentPointerActivity, { passive: true });
-    } else {
-      document.addEventListener("touchstart", onParentPointerActivity, { passive: true });
-      document.addEventListener("mousedown", onParentPointerActivity, { passive: true });
-    }
-
     document.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mousedown", registerActivity, { passive: true });
+    document.addEventListener("click", registerActivity, { passive: true });
     document.addEventListener("wheel", registerActivity, { passive: true });
+    document.addEventListener("touchstart", registerActivity, { passive: true });
+    document.addEventListener("pointerdown", registerActivity, { passive: true });
     document.addEventListener("keydown", registerActivity);
 
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && !interactionMode) {
+      if (!document.hidden) {
         registerActivity();
       }
     });
@@ -1692,22 +1267,14 @@
      ****************************************************************/
     function init() {
       updateGlobalDurationUI();
-      updatePauseButtonUI();
-      updateInteractButtonUI();
-
       applyTvMode();
-
       renderTabs();
       renderManager();
-
       loadPage(0);
-
       showNav();
       showCursorIfNeeded();
-
       startPeriodicRefresh();
-
-      requestAnimationFrame(tick);
+      tick();
     }
 
     init();
