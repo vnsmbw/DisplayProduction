@@ -1071,14 +1071,12 @@
     }
 
     function showAuthHelperIfNeeded() {
-      if (!pages.length) return;
-
-      const page = pages[currentIndex];
-      if (isPowerAppsUrl(page.url)) {
-        authHelper.classList.add("show");
-      } else {
-        authHelper.classList.remove("show");
-      }
+      /*
+        Đã tắt popup "Power Apps có thể cần đăng nhập ngoài iframe".
+        Trước đây mỗi lần rotate sang Power Apps, popup này tự hiện lại.
+        Giữ hàm này để không ảnh hưởng logic loadPage(), nhưng luôn đảm bảo panel bị ẩn.
+      */
+      authHelper.classList.remove("show");
     }
 
     function hideAuthHelper() {
