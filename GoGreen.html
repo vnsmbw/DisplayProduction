@@ -1,38 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
+    <meta charset="UTF-8">
 
-.powerbi-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-.powerbi-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-</style>
+    <title>GoGreen Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        #report-container {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        #powerbi-frame {
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 20px);
+
+            width: 100vw;
+            height: 100vh;
+
+            border: 0;
+            margin: 0;
+            padding: 0;
+
+            /*
+             * Phóng nhẹ để loại bỏ viền trắng hai bên.
+             * Dashboard không bị méo, nhưng sẽ bị crop nhẹ
+             * ở cạnh trên và cạnh dưới.
+             */
+            transform: translate(-50%, -50%) scale(1.04);
+            transform-origin: center center;
+        }
+    </style>
 </head>
 
 <body>
-<div class="powerbi-container">
-    <iframe
-        title="GoGreen"
-        src="https://app.powerbi.com/reportEmbed?reportId=ad5d78c9-8bd4-4501-8535-99dfce1a4465&autoAuth=true&ctid=38ae3bcd-9579-4fd4-adda-b42e1495d55a"
-        allowfullscreen>
-    </iframe>
-</div>
+    <div id="report-container">
+        <iframe
+            id="powerbi-frame"
+            src="https://app.powerbi.com/view?r=eyJrIjoiMmYwYTYxYWItMzU5Mi00ZDk4LWJiMTMtODQyNjk0MzU4NmJjIiwidCI6IjJjYzNmNTVlLWUwNmUtNDRiYi1iMzQxLWI3MThlMDEyZTQ4ZiIsImMiOjEwfQ%3D%3D&amp;pageView=fitToPage"
+            allowfullscreen
+        ></iframe>
+    </div>
 </body>
 </html>
