@@ -25,81 +25,39 @@
             background: #ffffff;
         }
 
-        /*
-         * ============================================================
-         *  CẤU HÌNH TINH CHỈNH DASHBOARD (top-anchored)
-         * ============================================================
-         *
-         * --dashboard-top-gap:
-         *   Khoảng cách CỐ ĐỊNH từ mép trên màn hình xuống dashboard.
-         *   Bạn muốn 5px -> để 5px. Nhờ transform-origin: top center,
-         *   giá trị này KHÔNG bị đổi khi scale, nên top không bao giờ dính mép.
-         *
-         * --dashboard-scale:
-         *   Phóng to dashboard để lấp phần viền trắng và "dàn trải" nội dung.
-         *   Tăng nếu vẫn còn trắng, giảm nếu bị crop mất nội dung.
-         *
-         * --dashboard-offset-x:
-         *   Dịch ngang dashboard để căn giữa cho cân đối (mặc định 0).
-         *
-         * --dashboard-crop-bottom:
-         *   Tăng chiều cao iframe để đẩy phần trắng phía DƯỚI ra khỏi màn hình.
-         *   Tăng giá trị này nếu bottom vẫn còn nhiều khoảng trắng.
-         * ============================================================
-         */
-        :root {
-            --dashboard-top-gap: 5px;
-            --dashboard-scale: 1.02;
-            --dashboard-offset-x: 0px;
-            --dashboard-crop-bottom: 140px;
-        }
-
         #report-container {
             position: fixed;
             inset: 0;
-            width: 100vw;
-            height: 100vh;
             overflow: hidden;
             background: #ffffff;
         }
 
         #powerbi-frame {
             position: absolute;
-
-            /*
-             * NEO IFRAME TỪ ĐỈNH:
-             * - top = khoảng cách cố định 5px (không đổi khi scale).
-             * - transform-origin: top center -> scale nở XUỐNG DƯỚI,
-             *   nên mép trên luôn giữ nguyên cách 5px.
-             */
-            top: var(--dashboard-top-gap);
-            left: calc(50% + var(--dashboard-offset-x));
+            top: 50%;
+            left: calc(50% - 20px);
 
             width: 100vw;
-
-            /*
-             * Chiều cao = phần còn lại của màn hình (sau khi trừ top-gap)
-             * CỘNG thêm phần crop-bottom để đẩy khoảng trắng dư ra ngoài.
-             */
-            height: calc(
-                100vh
-                - var(--dashboard-top-gap)
-                + var(--dashboard-crop-bottom)
-            );
+            height: 100vh;
 
             border: 0;
             margin: 0;
             padding: 0;
 
-            transform: translateX(-50%) scale(var(--dashboard-scale));
-            transform-origin: top center;
-
-            display: block;
-            background: #ffffff;
+            /*
+             * Phóng nhẹ để loại bỏ viền trắng hai bên.
+             * Dashboard không bị méo, nhưng sẽ bị crop nhẹ
+             * ở cạnh trên và cạnh dưới.
+             */
+            transform: translate(-50%, -50%) scale(1.04);
+            transform-origin: center center;
         }
 
         /*
          * Nút fullscreen ở góc dưới bên phải.
+         *
+         * top: auto !important giúp vô hiệu hóa hoàn toàn
+         * vị trí top cũ nếu trình duyệt vẫn đang cache CSS.
          */
         #fullscreen-btn {
             position: fixed !important;
@@ -160,62 +118,17 @@
         }
 
         /*
-         * Fullscreen mode.
+         * Đảm bảo container phủ toàn bộ màn hình
+         * khi chuyển sang chế độ fullscreen.
          */
         #report-container:fullscreen {
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
-            background: #ffffff;
         }
 
         #report-container:-webkit-full-screen {
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
-            background: #ffffff;
-        }
-
-        /*
-         * ------------------------------------------------------------
-         *  ĐIỀU CHỈNH THEO KÍCH THƯỚC MÀN HÌNH
-         *  (top-gap luôn = 5px, chỉ thay đổi scale & crop-bottom)
-         * ------------------------------------------------------------
-         */
-
-        /* Màn hình thấp (<=800px): giảm scale & crop để tránh mất nội dung. */
-        @media (max-height: 800px) {
-            :root {
-                --dashboard-scale: 1.015;
-                --dashboard-crop-bottom: 110px;
-            }
-        }
-
-        /* Màn hình cao (>=900px): crop bottom mạnh hơn. */
-        @media (min-height: 900px) {
-            :root {
-                --dashboard-scale: 1.025;
-                --dashboard-crop-bottom: 170px;
-            }
-        }
-
-        /*
-         * TV 86" thường là 4K (>=1400px chiều cao) -> crop bottom nhiều hơn nữa
-         * để triệt tiêu khoảng trắng dư bên dưới.
-         */
-        @media (min-height: 1400px) {
-            :root {
-                --dashboard-scale: 1.03;
-                --dashboard-crop-bottom: 260px;
-            }
-        }
-
-        /* Màn hình rất rộng (>16:9): tăng scale nhẹ cho cân đối. */
-        @media (min-aspect-ratio: 16/9) {
-            :root {
-                --dashboard-scale: 1.03;
-                --dashboard-crop-bottom: 200px;
-            }
         }
     </style>
 </head>
@@ -228,7 +141,6 @@
             src="https://app.powerbi.com/view?r=eyJrIjoiMmYwYTYxYWItMzU5Mi00ZDk4LWJiMTMtODQyNjk0MzU4NmJjIiwidCI6IjJjYzNmNTVlLWUwNmUtNDRiYi1iMzQxLWI3MThlMDEyZTQ4ZiIsImMiOjEwfQ%3D%3D"
             title="GoGreen Dashboard"
             allowfullscreen
-            webkitallowfullscreen
         ></iframe>
 
         <!-- Nút fullscreen góc dưới bên phải -->
